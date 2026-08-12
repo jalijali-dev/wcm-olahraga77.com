@@ -1,0 +1,17 @@
+---
+deployment:
+  tasks:
+    # cPanel Git Version Control clones the repo into its own working
+    # directory (e.g. /home/USERNAME/repositories/wcm-olahraga77), NOT the
+    # live document root. This deployment task is what actually copies
+    # the pulled files into public_html on every "Deploy HEAD Commit".
+    #
+    # CHANGE /home/USERNAME/public_html to your real docroot path before
+    # first deploy (cPanel > File Manager, or Domains page, shows the
+    # exact path for olahraga77.com's document root).
+    #
+    # --exclude flags protect files that must never be overwritten by a
+    # git deploy: the real database.php (gitignored, lives only on the
+    # server) and uploaded media (also gitignored, grows on the server).
+    - export DEPLOYPATH=/home/USERNAME/public_html/
+    - /usr/bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' --exclude='cms-admin/config/database.php' --exclude='uploads' ./ $DEPLOYPATH

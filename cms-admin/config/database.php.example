@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Database connection config — EXAMPLE / TEMPLATE.
+ *
+ * The real cms-admin/config/database.php is gitignored (see /.gitignore)
+ * so live credentials never end up in the GitHub repo. On a fresh clone
+ * (new dev machine, or cPanel's first pull), copy this file to
+ * database.php and fill in real values:
+ *
+ *   cp cms-admin/config/database.php.example cms-admin/config/database.php
+ *
+ * IMPORTANT (see /CLAUDE.md): olahraga77.com's DB must always be a
+ * separate database from sagagoal.com's — never point this at the same
+ * DB_NAME/host as the Kepala site.
+ */
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'CHANGE_ME');
+define('DB_USER', 'CHANGE_ME');
+define('DB_PASS', 'CHANGE_ME');
+
+try {
+    $pdo = new PDO(
+        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+        DB_USER,
+        DB_PASS,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]
+    );
+} catch (PDOException $e) {
+
+    die('Database connection failed: ' . $e->getMessage());
+}

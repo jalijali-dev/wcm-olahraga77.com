@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /cms-admin/
+Disallow: /includes/
+Disallow: /cari.php
+
+Sitemap: https://olahraga77.com/sitemap.xml

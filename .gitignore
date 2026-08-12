@@ -1,0 +1,35 @@
+# Sensitive config (contains real credentials/secrets)
+cms-admin/config/database.php
+cms-admin/config/app.php
+.env
+.env.local
+.env.production
+*.env
+
+# User-uploaded content (not source code, can get large)
+uploads/
+cms-admin/uploads/
+
+# Build/deploy artifacts
+*.zip
+*.bak
+wcm-olahraga77-*.zip
+
+# Scratch folder for deployment packages / migration files handed to the
+# user (SQL migrations, deploy zips, etc.) — not part of the codebase.
+migration/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+
+# Logs
+*.log
+logs/
+
+# Dependency folders (kalau nanti ada composer/npm)
+vendor/
+node_modules/

@@ -1,0 +1,122 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * cms-admin/config/app.php — EXAMPLE / TEMPLATE.
+ *
+ * The real app.php is gitignored (see /.gitignore) — it holds
+ * CMS_AI_ENC_SECRET (encrypts stored AI/API keys at rest) and
+ * GROWTH_AGENT_DIGEST_TOKEN, both real secrets that must never land in
+ * git history, public or private repo.
+ *
+ * On a fresh clone / fresh server, copy this to app.php and generate
+ * real values:
+ *
+ *   cp cms-admin/config/app.php.example cms-admin/config/app.php
+ *   php -r "echo bin2hex(random_bytes(32));"   # run twice, once per secret below
+ */
+
+// ─── CMS identity ─────────────────────────────────────────────────────────────
+define('CMS_ADMIN_NAME',    'WPM');
+define('CMS_ADMIN_TAGLINE', 'OLAHRAGA77.COM');
+
+// ─── AI/API credential encryption secret ──────────────────────────────────────
+// Used by cms_ai_enc_key() (cms-admin/includes/ai-helpers.php) to derive the
+// AES-256-CBC key that encrypts stored API keys at rest. Generate once via:
+// bin2hex(random_bytes(32)). Rotating it requires re-encrypting every
+// api_key_enc row in *_api_settings first (decrypt with the old secret,
+// re-encrypt with the new one) or existing keys become unreadable.
+define('CMS_AI_ENC_SECRET', 'CHANGE_ME_bin2hex_random_bytes_32');
+
+// ─── Growth Agent digest API token ─────────────────────────────────────────
+// Dipakai cms-admin/api/growth-agent-digest.php buat autentikasi request dari
+// workflow n8n eksternal (bukan sesi admin browser). Generate sekali:
+// bin2hex(random_bytes(32)).
+define('GROWTH_AGENT_DIGEST_TOKEN', 'CHANGE_ME_bin2hex_random_bytes_32');
+
+// ─── Growth Agent Autonomous Mode webhook ──────────────────────────────────
+// Optional outbound POST fired once per auto-applied internal link. Leave
+// empty to disable notifications entirely.
+define('GROWTH_AGENT_AUTONOMOUS_WEBHOOK_URL', '');
+
+// ─── Project root filesystem path ─────────────────────────────────────────────
+if (!defined('CMS_PROJECT_ROOT')) {
+    define('CMS_PROJECT_ROOT', dirname(__DIR__, 2));
+}
+
+// ─── Base URL ─────────────────────────────────────────────────────────────────
+// Auto-derives the URL to the project root from the server environment.
+// Works for HTTP and HTTPS, any host, any subfolder under the web root.
+if (!defined('BASE_URL')) {
+    $_aw_scheme  = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+        ? 'https' : 'http';
+    $_aw_host    = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $_aw_docRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
+    $_aw_self    = rtrim(str_replace('\\', '/', CMS_PROJECT_ROOT), '/');
+
+    $_aw_relPath = ($_aw_docRoot !== '' && str_starts_with($_aw_self, $_aw_docRoot))
+        ? substr($_aw_self, strlen($_aw_docRoot))
+        : '';
+
+    define('BASE_URL', $_aw_scheme . '://' . $_aw_host . '/' . ltrim($_aw_relPath, '/') . '/');
+
+    unset($_aw_scheme, $_aw_host, $_aw_docRoot, $_aw_self, $_aw_relPath);
+}
+
+// ─── Asset preview URL ────────────────────────────────────────────────────────
+if (!function_exists('app_asset_preview_url')) {
+    function app_asset_preview_url(string $path): string
+    {
+        $path = trim($path);
+        if ($path === '') {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+        if (function_exists('cms_public_base_prefix')) {
+            return cms_public_base_prefix() . ltrim($path, '/');
+        }
+        return BASE_URL . ltrim($path, '/');
+    }
+}
+
+// ─── Safe media disk path ─────────────────────────────────────────────────────
+if (!function_exists('app_safe_media_disk_path')) {
+    function app_safe_media_disk_path(string $webPath, string $projectRoot): ?string
+    {
+        $rel = ltrim($webPath, '/');
+        if ($rel === '' || !str_starts_with($rel, 'uploads/')) {
+            return null;
+        }
+        $diskPath = realpath($projectRoot . '/' . $rel);
+        if ($diskPath === false) {
+            return null;
+        }
+        $uploadsRoot = realpath($projectRoot . '/uploads');
+        if ($uploadsRoot === false) {
+            return null;
+        }
+        if (!str_starts_with($diskPath, $uploadsRoot . DIRECTORY_SEPARATOR)) {
+            return null;
+        }
+        return $diskPath;
+    }
+}
+
+// ─── Safe local media path (string-level check, no disk lookup) ───────────────
+if (!function_exists('app_is_safe_local_media_path')) {
+    function app_is_safe_local_media_path(string $path): bool
+    {
+        $path = trim($path);
+        if ($path === '') {
+            return false;
+        }
+        $normalized = str_replace('\\', '/', $path);
+        if (str_contains($normalized, '..')) {
+            return false;
+        }
+        $normalized = '/' . ltrim($normalized, '/');
+        return str_starts_with($normalized, '/uploads/');
+    }
+}

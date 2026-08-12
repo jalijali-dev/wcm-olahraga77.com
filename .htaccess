@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# /artikel/{slug} -> artikel.php?slug={slug}
+RewriteRule ^artikel/([a-zA-Z0-9\-]+)/?$ artikel.php?slug=$1 [L,QSA]
+
+# /kategori/{slug} -> kategori.php?slug={slug}
+RewriteRule ^kategori/([a-zA-Z0-9\-]+)/?$ kategori.php?slug=$1 [L,QSA]
+
+# /sitemap.xml -> sitemap.php (index of sub-sitemaps)
+RewriteRule ^sitemap\.xml$ sitemap.php [L,QSA]
+
+# /sitemap-articles.xml, /sitemap-categories.xml, etc -> sitemap-file.php?file=...
+RewriteRule ^(sitemap-[a-z]+\.xml)$ sitemap-file.php?file=$1 [L,QSA]
