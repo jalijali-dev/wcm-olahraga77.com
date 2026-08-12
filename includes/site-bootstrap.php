@@ -122,9 +122,20 @@ function wpm_site_migrate_categories(PDO $pdo): void
         // Find any category outside the final 4 — these are the
         // livescore-era leftovers (or an old "Timnas"/"Transfer" row with
         // a different slug spelling than our canonical one).
+        //
+        // BUG (found 12 Agu 2026, live on production): this used to bind
+        // array_values($ids) here — but $ids is keyed BY SLUG (see the
+        // `$ids[$slug] = (int) $id;` loop above), so array_values($ids)
+        // gives the numeric category IDs (e.g. 988, 989...), not their
+        // slugs. Comparing `slug NOT IN (988, 989, ...)` is never true for
+        // any real slug, so EVERY category — including all 4 correct ones
+        // — matched as "stale" and got deleted on every single public page
+        // load. This is why categories kept vanishing right after being
+        // added, every time the homepage or a /kategori/{slug} page was
+        // opened. array_keys($ids) is the actual slug list.
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $stale = $pdo->prepare("SELECT id, slug FROM article_categories WHERE slug NOT IN ($placeholders)");
-        $stale->execute(array_values($ids));
+        $stale->execute(array_keys($ids));
         $staleRows = $stale->fetchAll();
 
         if (!$staleRows) {
