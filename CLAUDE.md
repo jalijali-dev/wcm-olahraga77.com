@@ -264,6 +264,31 @@ olahraga77.com ini.
   (`assets/css/site.css`) — jadiin anchor-nya block-level, containing
   block-nya jadi bener nutupin seluruh box hero.
 
+**12 Agu 2026 (lanjutan #6) — Ad rendering di frontend (sebelumnya gak ada sama sekali):**
+- Modul Advertisements (`cms-admin/pages/ads.php`) ternyata didesain buat
+  manggil `wpm_render_ad_slot()` yang cuma ada di frontend LAMA sagagoal
+  (football.php/basket.php, dst — gak pernah ikut ke-clone ke project
+  ini). Iklan yang disave di admin gak pernah nongol di mana pun karena
+  gak ada yang manggil fungsi itu sama sekali di sini.
+- Ditambahin: `wpm_ad_pick()` + `wpm_render_ad_slot()` di
+  `includes/site-bootstrap.php` — pilih 1 iklan aktif per position slug +
+  scope (global selalu match, scope lain match kalau sama + target_id
+  cocok/null), increment `impressions`, render sesuai `ad_type`
+  (image/text/html/external_code/video).
+- `ad-click.php` (root) — endpoint klik-tracking, increment `clicks`,
+  redirect ke `target_url`.
+- Dipasang di sidebar `index.php` (scope `homepage`), `kategori.php`
+  (scope `category`, target = category id), `artikel.php` (scope
+  `article`, target = page_id, + slot `article-before-title`/
+  `article-after-title` di dalam body).
+- **Belum ditest visual** — perlu di-deploy dulu terus cek TEST2/TEST3
+  (posisi Sidebar Left/Right, scope global) yang udah ada di admin
+  beneran nongol di homepage.
+- **Device targeting (`advertisements.device`) SENGAJA belum difilter**
+  — frontend ini gak ada deteksi device sisi server, semua iklan tampil
+  ke semua device apapun settingnya. Kalau nanti perlu, tambahin UA
+  sniffing atau CSS media-query-based show/hide.
+
 ## Yang BELUM dikerjakan — task list buat lanjut
 
 1. Opsional: jalanin `DROP TABLE` buat 12 tabel livescore yang gak

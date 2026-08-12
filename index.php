@@ -49,6 +49,7 @@ require __DIR__ . '/includes/site-header.php';
   </div>
 
   <aside class="wpm-main__sidebar">
+    <?= wpm_render_ad_slot($pdo, 'sidebar-left', 'homepage') ?>
     <div class="wpm-sidebar-box">
       <h2 class="wpm-section-title">Terpopuler</h2>
       <?php foreach ($popular as $i => $p): ?>
@@ -59,6 +60,7 @@ require __DIR__ . '/includes/site-header.php';
       <?php endforeach; ?>
       <?php if (!$popular): ?><p>Belum ada data.</p><?php endif; ?>
     </div>
+    <?= wpm_render_ad_slot($pdo, 'sidebar-right', 'homepage') ?>
   </aside>
 </main>
 <?php require __DIR__ . '/includes/site-footer.php'; ?>

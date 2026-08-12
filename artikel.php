@@ -40,10 +40,15 @@ require __DIR__ . '/includes/site-header.php';
     <img class="wpm-article__cover" src="<?= wpm_esc(wpm_image_url($article['featured_image'])) ?>" alt="<?= wpm_esc($article['title']) ?>">
     <?php endif; ?>
 
+    <?= wpm_render_ad_slot($pdo, 'article-before-title', 'article', (int) $article['page_id']) ?>
+
     <div class="wpm-article__body"><?= $article['content'] ?></div>
+
+    <?= wpm_render_ad_slot($pdo, 'article-after-title', 'article', (int) $article['page_id']) ?>
   </div>
 
   <aside class="wpm-main__sidebar">
+    <?= wpm_render_ad_slot($pdo, 'sidebar-left', 'article', (int) $article['page_id']) ?>
     <?php if ($related): ?>
     <div class="wpm-sidebar-box">
       <h2 class="wpm-section-title">Artikel Terkait</h2>
@@ -63,6 +68,7 @@ require __DIR__ . '/includes/site-header.php';
       </div>
       <?php endforeach; ?>
     </div>
+    <?= wpm_render_ad_slot($pdo, 'sidebar-right', 'article', (int) $article['page_id']) ?>
   </aside>
 </main>
 <?php require __DIR__ . '/includes/site-footer.php'; ?>

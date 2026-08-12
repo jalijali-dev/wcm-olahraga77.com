@@ -270,6 +270,147 @@ function wpm_increment_views(PDO $pdo, int $pageId): void
     }
 }
 
+// ─── Advertisements ─────────────────────────────────────────────────────────
+//
+// cms-admin's Advertisements module (cms-admin/pages/ads.php) was cloned
+// from sagagoal.com along with the rest of cms-admin/ — it manages the
+// `advertisements`/`ad_positions` tables and its own comments reference
+// wpm_render_ad_slot() as something sagagoal's OWN frontend (football.php,
+// basket.php, etc.) already calls. Those frontend files were never part of
+// this project (only cms-admin/ was cloned, see /CLAUDE.md), so until now
+// nothing on olahraga77.com's frontend ever called this — ads configured
+// in admin had no slot to render into. Added 12 Agu 2026.
+//
+// Scope note: device targeting (advertisements.device: all/desktop/mobile/
+// tablet) is stored but NOT filtered on here — this frontend doesn't do
+// server-side device detection. Every ad renders regardless of its
+// `device` setting. Revisit if that turns out to matter.
+
+/**
+ * Pick one active ad for a given position slug + page scope. Returns null
+ * if no eligible ad exists. `global`-scoped ads always match regardless of
+ * $scope; scope-specific ads (homepage/category/article) only match when
+ * $scope equals theirs AND (their placement_target_id is null — "any
+ * category/article" — or equals $targetId).
+ */
+function wpm_ad_pick(PDO $pdo, string $positionSlug, string $scope, ?int $targetId = null): ?array
+{
+    try {
+        $stmt = $pdo->prepare(
+            "SELECT a.* FROM advertisements a
+             INNER JOIN ad_positions p ON p.id = a.position_id
+             WHERE p.slug = :slug
+               AND a.is_active = 1
+               AND (a.start_date IS NULL OR a.start_date <= CURDATE())
+               AND (a.end_date IS NULL OR a.end_date >= CURDATE())
+               AND (
+                     a.placement_scope = 'global'
+                     OR (a.placement_scope = :scope
+                         AND (a.placement_target_id IS NULL OR a.placement_target_id = :target_id))
+                   )
+             ORDER BY a.sort_order ASC, RAND()
+             LIMIT 1"
+        );
+        $stmt->bindValue('slug', $positionSlug);
+        $stmt->bindValue('scope', $scope);
+        $stmt->bindValue('target_id', $targetId, $targetId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $stmt->execute();
+        $ad = $stmt->fetch();
+
+        return $ad ?: null;
+    } catch (Throwable $e) {
+        error_log('[wpm_ad_pick] ' . $e->getMessage());
+
+        return null;
+    }
+}
+
+/**
+ * Render one ad slot as HTML (empty string if nothing eligible). Also
+ * fires a fire-and-forget impression increment. Clicks are tracked via
+ * ad-click.php (project root), which increments `clicks` then 302s to
+ * target_url — every clickable ad type link through that endpoint instead
+ * of target_url directly.
+ */
+function wpm_render_ad_slot(PDO $pdo, string $positionSlug, string $scope, ?int $targetId = null): string
+{
+    $ad = wpm_ad_pick($pdo, $positionSlug, $scope, $targetId);
+    if ($ad === null) {
+        return '';
+    }
+
+    try {
+        $pdo->prepare('UPDATE advertisements SET impressions = impressions + 1 WHERE id = :id')
+            ->execute(['id' => (int) $ad['id']]);
+    } catch (Throwable $e) {
+        // non-critical
+    }
+
+    $clickUrl = wpm_base_url('/ad-click.php?id=' . (int) $ad['id']);
+    $targetAttr = !empty($ad['open_in_new_tab']) ? ' target="_blank" rel="noopener sponsored"' : ' rel="sponsored"';
+    $sponsoredLabel = !empty($ad['show_sponsored_label'])
+        ? '<span class="wpm-ad__label">' . wpm_esc((string) ($ad['advertiser_label'] ?: 'Ad')) . '</span>'
+        : '';
+
+    $adType = (string) $ad['ad_type'];
+
+    if ($adType === 'html' || $adType === 'external_code') {
+        // Admin-authored trusted markup — rendered raw, same convention as
+        // cms_sanitize_ad_html()-passed content in cms-admin. Not
+        // click-tracked (arbitrary embed code manages its own links).
+        $code = $adType === 'html' ? (string) $ad['html_code'] : (string) $ad['external_code'];
+
+        return '<div class="wpm-ad-slot wpm-ad-slot--' . wpm_esc($adType) . '">' . $sponsoredLabel . $code . '</div>';
+    }
+
+    if ($adType === 'video') {
+        $videoSrc = (string) ($ad['video_path'] ?: $ad['video_url']);
+        if ($videoSrc === '') {
+            return '';
+        }
+        $attrs = [];
+        if (!empty($ad['video_autoplay'])) { $attrs[] = 'autoplay'; }
+        if (!empty($ad['video_muted'])) { $attrs[] = 'muted'; }
+        if (!empty($ad['video_loop'])) { $attrs[] = 'loop'; }
+        if (!empty($ad['video_controls'])) { $attrs[] = 'controls'; }
+        $poster = trim((string) ($ad['video_poster'] ?? ''));
+
+        $html = '<div class="wpm-ad-slot wpm-ad-slot--video">' . $sponsoredLabel;
+        $html .= '<video src="' . wpm_esc(wpm_image_url($videoSrc)) . '"'
+            . ($poster !== '' ? ' poster="' . wpm_esc(wpm_image_url($poster)) . '"' : '')
+            . ' ' . implode(' ', $attrs) . ' playsinline></video>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    // image / text share the same clickable-card layout.
+    $headline = trim((string) ($ad['headline'] ?? ''));
+    $description = trim((string) ($ad['description'] ?? ''));
+    $ctaText = trim((string) ($ad['cta_text'] ?? ''));
+    $hasLink = trim((string) ($ad['target_url'] ?? '')) !== '';
+
+    $inner = $sponsoredLabel;
+    if ($adType === 'image' && !empty($ad['banner_image'])) {
+        $inner .= '<img src="' . wpm_esc(wpm_image_url((string) $ad['banner_image'])) . '" alt="'
+            . wpm_esc((string) ($ad['image_alt'] ?: $headline)) . '" loading="lazy">';
+    }
+    if ($headline !== '') {
+        $inner .= '<span class="wpm-ad__headline">' . wpm_esc($headline) . '</span>';
+    }
+    if ($description !== '') {
+        $inner .= '<span class="wpm-ad__desc">' . wpm_esc($description) . '</span>';
+    }
+    if ($ctaText !== '') {
+        $inner .= '<span class="wpm-ad__cta">' . wpm_esc($ctaText) . '</span>';
+    }
+
+    $tag = $hasLink ? 'a' : 'div';
+    $hrefAttr = $hasLink ? ' href="' . wpm_esc($clickUrl) . '"' . $targetAttr : '';
+
+    return '<' . $tag . ' class="wpm-ad-slot wpm-ad-slot--' . wpm_esc($adType) . '"' . $hrefAttr . '>' . $inner . '</' . $tag . '>';
+}
+
 // ─── Display helpers ────────────────────────────────────────────────────────
 
 function wpm_esc(?string $value): string

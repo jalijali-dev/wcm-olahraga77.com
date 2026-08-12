@@ -274,6 +274,62 @@ img { max-width: 100%; display: block; }
     .wpm-card img { width: 110px; height: 74px; }
 }
 
+/* ─── Ads ─────────────────────────────────────────────────────────────── */
+
+.wpm-ad-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    background: var(--wpm-white);
+    border-radius: var(--wpm-radius);
+    box-shadow: var(--wpm-shadow);
+    padding: 12px;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.wpm-ad-slot img,
+.wpm-ad-slot video {
+    width: 100%;
+    border-radius: 6px;
+}
+
+.wpm-ad__label {
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--wpm-text-muted);
+    background: var(--wpm-charcoal-100);
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+.wpm-ad__headline {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--wpm-charcoal-950);
+}
+
+.wpm-ad__desc {
+    font-size: 12px;
+    color: var(--wpm-text-muted);
+}
+
+.wpm-ad__cta {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--wpm-white);
+    background: var(--wpm-green-500);
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-top: 4px;
+}
+
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
 
 .wpm-sidebar-box {

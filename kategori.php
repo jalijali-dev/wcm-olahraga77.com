@@ -15,6 +15,9 @@ if ($slug === '' || !isset($navCategories[$slug])) {
 }
 
 $label = $navCategories[$slug];
+$categoryIdStmt = $pdo->prepare('SELECT id FROM article_categories WHERE slug = :slug LIMIT 1');
+$categoryIdStmt->execute(['slug' => $slug]);
+$categoryId = (int) ($categoryIdStmt->fetchColumn() ?: 0) ?: null;
 $perPage = 12;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $perPage;
@@ -66,6 +69,7 @@ require __DIR__ . '/includes/site-header.php';
   </div>
 
   <aside class="wpm-main__sidebar">
+    <?= wpm_render_ad_slot($pdo, 'sidebar-left', 'category', $categoryId) ?>
     <div class="wpm-sidebar-box">
       <h2 class="wpm-section-title">Terpopuler</h2>
       <?php foreach ($popular as $i => $p): ?>
@@ -75,6 +79,7 @@ require __DIR__ . '/includes/site-header.php';
       </div>
       <?php endforeach; ?>
     </div>
+    <?= wpm_render_ad_slot($pdo, 'sidebar-right', 'category', $categoryId) ?>
   </aside>
 </main>
 <?php require __DIR__ . '/includes/site-footer.php'; ?>
