@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#262a32"/>
+  <g fill="#3fc177" opacity="0.5">
+    <circle cx="320" cy="150" r="46" fill="none" stroke="#3fc177" stroke-width="6"/>
+    <path d="M282 175 L320 140 L358 175 L358 210 L320 240 L282 210 Z" fill="none" stroke="#3fc177" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+  <text x="320" y="300" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="18" fill="#6b7280" text-anchor="middle">OLAHRAGA77.COM</text>
+</svg>
