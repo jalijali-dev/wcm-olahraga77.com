@@ -13,5 +13,5 @@ deployment:
     # --exclude flags protect files that must never be overwritten by a
     # git deploy: the real database.php (gitignored, lives only on the
     # server) and uploaded media (also gitignored, grows on the server).
-    - export DEPLOYPATH=/home/USERNAME/public_html/
+    - export DEPLOYPATH=/home/olahraga77/public_html/
     - /usr/bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' --exclude='cms-admin/config/database.php' --exclude='uploads' ./ $DEPLOYPATH
