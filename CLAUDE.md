@@ -249,6 +249,21 @@ olahraga77.com ini.
   kebuka ke publik kalau somehow ke-commit karena gitignore-nya
   kelewat). Belum dikonfirmasi udah diganti apa belum per commit ini.
 
+**12 Agu 2026 (lanjutan #5) — Bug beneran ketemu: hero title "loncat" ke atas:**
+- Sempat dicurigai cache Cloudflare (domain production pakai Cloudflare),
+  tapi kejadian yang SAMA PERSIS juga muncul di localhost (bukan cuma
+  production) — jadi bukan soal cache/CDN, itu bug CSS asli.
+- **Root cause:** `.wpm-hero` di markup (`index.php`) itu tag `<a>`
+  (default `display: inline`), dibungkusin `position: relative` sementara
+  anaknya (`.wpm-hero__overlay`) `position: absolute`. Kombinasi
+  "elemen inline + position:relative + anak block position:absolute"
+  itu bikin containing block si overlay jadi fragment inline PERTAMA si
+  anchor doang (bukan seluruh box hero) — makanya teks title
+  ke-render di deket ujung atas anchor, bukan nutupin gambar hero.
+- **Fix:** tambah `display: block;` di rule `.wpm-hero`
+  (`assets/css/site.css`) — jadiin anchor-nya block-level, containing
+  block-nya jadi bener nutupin seluruh box hero.
+
 ## Yang BELUM dikerjakan — task list buat lanjut
 
 1. Opsional: jalanin `DROP TABLE` buat 12 tabel livescore yang gak

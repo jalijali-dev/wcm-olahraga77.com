@@ -156,6 +156,16 @@ img { max-width: 100%; display: block; }
 /* ─── Hero / featured ────────────────────────────────────────────────── */
 
 .wpm-hero {
+    /* .wpm-hero is an <a> in the markup (index.php) — <a> defaults to
+       display:inline, and an inline element that's position:relative with
+       an absolutely-positioned block child (.wpm-hero__overlay) is a real
+       CSS footgun: the containing block for the absolute child becomes the
+       *first inline fragment* of the anchor, not the whole visual box, so
+       the overlay renders up near the top of the anchor's first line
+       instead of covering the hero image. Reproduced identically on both
+       local and production (12 Agu 2026) — not a caching issue. `display:
+       block` makes .wpm-hero a proper block-level positioning context. */
+    display: block;
     position: relative;
     border-radius: var(--wpm-radius);
     overflow: hidden;
