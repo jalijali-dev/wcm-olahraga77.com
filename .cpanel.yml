@@ -15,3 +15,12 @@ deployment:
     # server) and uploaded media (also gitignored, grows on the server).
     - export DEPLOYPATH=/home/olahraga77/public_html/
     - /usr/bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' --exclude='cms-admin/config/database.php' --exclude='uploads' ./ $DEPLOYPATH
+    # rsync from this host has repeatedly landed .htaccess (and other
+    # files) with permissions Apache can't read (403 "Server unable to
+    # read htaccess file, denying access to be safe" — happened twice,
+    # 12 Agu 2026), even though the source file in git is fine. Force
+    # sane permissions on every deploy so this stops being a manual fix:
+    # directories traversable+readable (755), files readable (644).
+    - /usr/bin/find $DEPLOYPATH -maxdepth 1 -type f -exec chmod 644 {} \;
+    - /usr/bin/find $DEPLOYPATH/includes $DEPLOYPATH/assets $DEPLOYPATH/cms-admin -type d -exec chmod 755 {} \;
+    - /usr/bin/find $DEPLOYPATH/includes $DEPLOYPATH/assets $DEPLOYPATH/cms-admin -type f -exec chmod 644 {} \;
