@@ -151,7 +151,8 @@ $sidebarSections = array_values(array_filter(array_map(
     <div class="admin-sidebar__brand">
         <a class="admin-sidebar__logo" href="<?= cms_esc(cms_dashboard_href()) ?>">
             <!-- img/logo.png (black) + img/logo-white.png (white) are the
-                 actual WPM monogram, already theme-aware via the
+                 standardized WCM cube mark (same across all Tentakel sites),
+                 already theme-aware via the
                  --black/--white CSS classes below (admin.css toggles which
                  one is visible based on the active admin theme — dark/purple
                  shows white, light shows black). This is admin-panel-only

@@ -17,7 +17,7 @@ declare(strict_types=1);
  */
 
 // ─── CMS identity ─────────────────────────────────────────────────────────────
-define('CMS_ADMIN_NAME',    'WPM');
+define('CMS_ADMIN_NAME',    'WCM');
 define('CMS_ADMIN_TAGLINE', 'OLAHRAGA77.COM');
 
 // ─── AI/API credential encryption secret ──────────────────────────────────────

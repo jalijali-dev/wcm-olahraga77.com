@@ -496,7 +496,7 @@ $fav     = cms_esc(cms_favicon_url());
                 </div>
             </div>
             <h1 class="lp-brand__name" id="lp-heading"><?= cms_esc(CMS_ADMIN_NAME) ?></h1>
-            <p class="lp-brand__tagline">Admin Panel - Olahraga77.com</p>
+            <p class="lp-brand__tagline">ADMIN PANEL &mdash; <?= cms_esc(CMS_ADMIN_TAGLINE) ?></p>
         </div>
 
         <div class="lp-divider" aria-hidden="true"></div>
