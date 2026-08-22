@@ -10,7 +10,7 @@ if ($q !== '') {
                 c.name AS category_name
          FROM pages p
          LEFT JOIN article_categories c ON c.id = p.category_id
-         WHERE p.status = "published" AND (p.title LIKE :q OR p.excerpt LIKE :q)
+         WHERE p.status = "published" AND (p.title LIKE :q OR p.excerpt LIKE :q OR p.meta_keywords LIKE :q)
          ORDER BY p.published_at DESC LIMIT 20'
     );
     $stmt->execute(['q' => '%' . $q . '%']);

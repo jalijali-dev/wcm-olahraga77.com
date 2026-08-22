@@ -179,9 +179,11 @@ function wpm_category_url(string $slug): string
 function wpm_get_articles(PDO $pdo, int $limit = 10, int $offset = 0, ?string $categorySlug = null): array
 {
     $sql = 'SELECT p.page_id, p.title, p.slug, p.excerpt, p.featured_image, p.published_at,
-                   p.is_featured, p.is_trending, p.views, c.name AS category_name, c.slug AS category_slug
+                   p.is_featured, p.is_trending, p.views, c.name AS category_name, c.slug AS category_slug,
+                   a.name AS author_name
             FROM pages p
             LEFT JOIN article_categories c ON c.id = p.category_id
+            LEFT JOIN admins a ON a.admin_id = p.author_id
             WHERE p.status = "published" AND p.published_at IS NOT NULL AND p.published_at <= NOW()';
     $params = [];
     if ($categorySlug !== null) {
@@ -219,9 +221,10 @@ function wpm_count_articles(PDO $pdo, ?string $categorySlug = null): int
 function wpm_get_article_by_slug(PDO $pdo, string $slug): ?array
 {
     $stmt = $pdo->prepare(
-        'SELECT p.*, c.name AS category_name, c.slug AS category_slug
+        'SELECT p.*, c.name AS category_name, c.slug AS category_slug, a.name AS author_name
          FROM pages p
          LEFT JOIN article_categories c ON c.id = p.category_id
+         LEFT JOIN admins a ON a.admin_id = p.author_id
          WHERE p.slug = :slug AND p.status = "published"
          LIMIT 1'
     );
@@ -229,6 +232,25 @@ function wpm_get_article_by_slug(PDO $pdo, string $slug): ?array
     $row = $stmt->fetch();
 
     return $row ?: null;
+}
+
+/**
+ * Split the comma-separated `pages.meta_keywords` field into a clean tag
+ * list for display. Reuses the SEO keywords field already in cms-admin's
+ * article form (Pages & Articles → Author section) instead of adding a new
+ * dedicated tags table — same data, presented as topic pills on the
+ * frontend so related articles feel more organized by subject, not just by
+ * the 4 broad nav categories.
+ */
+function wpm_article_tags(?string $metaKeywords): array
+{
+    if (!$metaKeywords) {
+        return [];
+    }
+    $tags = array_map('trim', explode(',', $metaKeywords));
+    $tags = array_filter($tags, static fn(string $t): bool => $t !== '');
+
+    return array_values($tags);
 }
 
 function wpm_get_related_articles(PDO $pdo, int $categoryId, int $excludePageId, int $limit = 5): array

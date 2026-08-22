@@ -34,7 +34,10 @@ require __DIR__ . '/includes/site-header.php';
 
     <?php if ($article['category_name']): ?><span class="wpm-article__category"><?= wpm_esc($article['category_name']) ?></span><?php endif; ?>
     <h1 class="wpm-article__title"><?= wpm_esc($article['title']) ?></h1>
-    <div class="wpm-article__meta"><?= wpm_esc(wpm_time_ago($article['published_at'])) ?> &middot; <?= (int) $article['views'] ?> views</div>
+    <div class="wpm-article__meta">
+      <?php if (!empty($article['author_name'])): ?><span class="wpm-article__byline">Oleh <strong><?= wpm_esc($article['author_name']) ?></strong></span> &middot; <?php endif; ?>
+      <?= wpm_esc(wpm_time_ago($article['published_at'])) ?> &middot; <?= (int) $article['views'] ?> views
+    </div>
 
     <?php if (!empty($article['featured_image'])): ?>
     <img class="wpm-article__cover" src="<?= wpm_esc(wpm_image_url($article['featured_image'])) ?>" alt="<?= wpm_esc($article['title']) ?>">
@@ -43,6 +46,15 @@ require __DIR__ . '/includes/site-header.php';
     <?= wpm_render_ad_slot($pdo, 'article-before-title', 'article', (int) $article['page_id']) ?>
 
     <div class="wpm-article__body"><?= $article['content'] ?></div>
+
+    <?php $articleTags = wpm_article_tags($article['meta_keywords'] ?? null); ?>
+    <?php if ($articleTags): ?>
+    <div class="wpm-article__tags">
+      <?php foreach ($articleTags as $tag): ?>
+      <a class="wpm-tag" href="<?= wpm_esc(wpm_base_url('/cari.php?q=' . rawurlencode($tag))) ?>">#<?= wpm_esc($tag) ?></a>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <?= wpm_render_ad_slot($pdo, 'article-after-title', 'article', (int) $article['page_id']) ?>
   </div>

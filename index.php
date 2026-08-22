@@ -93,7 +93,10 @@ require __DIR__ . '/includes/site-header.php';
           </div>
           <h3 class="wpm-card__title"><a href="<?= wpm_esc(wpm_article_url($article['slug'])) ?>"><?= wpm_esc($article['title']) ?></a></h3>
           <?php if (!empty($article['excerpt'])): ?><p class="wpm-card__excerpt"><?= wpm_esc($article['excerpt']) ?></p><?php endif; ?>
-          <a class="wpm-card__read" href="<?= wpm_esc(wpm_article_url($article['slug'])) ?>">Baca selengkapnya <span aria-hidden="true">→</span></a>
+          <div class="wpm-card__footer">
+            <?php if (!empty($article['author_name'])): ?><span class="wpm-card__byline">Oleh <?= wpm_esc($article['author_name']) ?></span><?php endif; ?>
+            <a class="wpm-card__read" href="<?= wpm_esc(wpm_article_url($article['slug'])) ?>">Baca selengkapnya <span aria-hidden="true">→</span></a>
+          </div>
         </div>
       </article>
       <?php endforeach; ?>
